@@ -183,9 +183,13 @@ public class HomeServiceImpl implements HomeService {
         Application application = applicationRepository.findByNumber(number)
                 .orElseThrow(() -> new NoSuchApplicationException("Такая заявка отсутсвует!"));
         Warehouse warehouse = application.getWarehouse();
+        warehouse.setWidth(warehouse.getWidth() + application.getWarehouse().getWidth() + 2);
+        warehouse.setLength(warehouse.getLength() + application.getWarehouse().getLength()+ 2);
         warehouse.deleteApplication(application);
+        warehouseRepository.save(warehouse);
         application.setStatus(Status.COMPLETED.getStatus());
         application.setMessage("Предмет забран со склада.");
+        applicationRepository.save(application);
         return getApplications(usernameWithToken);
     }
 
@@ -198,6 +202,7 @@ public class HomeServiceImpl implements HomeService {
     private void getException(Application application, String message) throws ValidWarehouseException {
         application.setStatus(Status.DENIED.getStatus());
         application.setMessage(message);
+        application.setFile("NULL");
         applicationRepository.save(application);
         throw new ValidWarehouseException(message);
     }
